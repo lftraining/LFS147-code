@@ -1,0 +1,70 @@
+# PIPELINE DEFINITION
+# Name: material-pipeline
+# Inputs:
+#    x: float
+#    y: float
+# Outputs:
+#    Output: float
+components:
+  comp-calculate-material-cost:
+    executorLabel: exec-calculate-material-cost
+    inputDefinitions:
+      parameters:
+        cost_per_square_unit:
+          parameterType: NUMBER_DOUBLE
+        radius:
+          parameterType: NUMBER_DOUBLE
+    outputDefinitions:
+      parameters:
+        Output:
+          parameterType: NUMBER_DOUBLE
+deploymentSpec:
+  executors:
+    exec-calculate-material-cost:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - calculate_material_cost
+        command:
+        - python3
+        - -m
+        - kfp.dsl.executor_main
+        image: chasechristensen/material_cost_component:v1
+pipelineInfo:
+  name: material-pipeline
+root:
+  dag:
+    outputs:
+      parameters:
+        Output:
+          valueFromParameter:
+            outputParameterKey: Output
+            producerSubtask: calculate-material-cost
+    tasks:
+      calculate-material-cost:
+        cachingOptions:
+          enableCache: true
+        componentRef:
+          name: comp-calculate-material-cost
+        inputs:
+          parameters:
+            cost_per_square_unit:
+              componentInputParameter: y
+            radius:
+              componentInputParameter: x
+        taskInfo:
+          name: calculate-material-cost
+  inputDefinitions:
+    parameters:
+      x:
+        parameterType: NUMBER_DOUBLE
+      y:
+        parameterType: NUMBER_DOUBLE
+  outputDefinitions:
+    parameters:
+      Output:
+        parameterType: NUMBER_DOUBLE
+schemaVersion: 2.1.0
+sdkVersion: kfp-2.4.0
