@@ -1,0 +1,14 @@
+# Use an official R base image
+FROM r-base
+
+# Install any necessary dependencies (if any)
+# RUN apt-get update && apt-get install -y ...
+
+# Copy the R script into the Docker image
+COPY generate_quote.R /usr/local/bin/generate_quote.R
+
+# Make the R script executable
+RUN chmod +x /usr/local/bin/generate_quote.R
+
+# Set the R script as the entrypoint
+ENTRYPOINT ["/usr/local/bin/generate_quote.R"]
