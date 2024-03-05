@@ -1,0 +1,68 @@
+# PIPELINE DEFINITION
+# Name: quote-pipeline
+# Inputs:
+#    x: float
+#    y: float
+# Outputs:
+#    Output: str
+components:
+  comp-generate-quote:
+    executorLabel: exec-generate-quote
+    inputDefinitions:
+      parameters:
+        state_tax:
+          parameterType: NUMBER_DOUBLE
+        total_cost:
+          parameterType: NUMBER_DOUBLE
+    outputDefinitions:
+      parameters:
+        quote:
+          parameterType: STRING
+deploymentSpec:
+  executors:
+    exec-generate-quote:
+      container:
+        args:
+        - '{{$.inputs.parameters[''total_cost'']}}'
+        - '{{$.inputs.parameters[''state_tax'']}}'
+        - '{{$.outputs.parameters[''quote''].output_file}}'
+        command:
+        - Rscript
+        - /usr/local/bin/generate_quote.r
+        image: chasechristensen/generate_quote:v1
+pipelineInfo:
+  name: quote-pipeline
+root:
+  dag:
+    outputs:
+      parameters:
+        Output:
+          valueFromParameter:
+            outputParameterKey: quote
+            producerSubtask: generate-quote
+    tasks:
+      generate-quote:
+        cachingOptions:
+          enableCache: true
+        componentRef:
+          name: comp-generate-quote
+        inputs:
+          parameters:
+            state_tax:
+              componentInputParameter: y
+            total_cost:
+              componentInputParameter: x
+        taskInfo:
+          name: generate-quote
+  inputDefinitions:
+    parameters:
+      x:
+        parameterType: NUMBER_DOUBLE
+      y:
+        parameterType: NUMBER_DOUBLE
+  outputDefinitions:
+    parameters:
+      Output:
+        parameterType: STRING
+schemaVersion: 2.1.0
+sdkVersion: kfp-2.4.0

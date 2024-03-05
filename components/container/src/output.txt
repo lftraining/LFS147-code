@@ -1,0 +1,8 @@
+Carousel Construction Quote:
+Magical Unicorns: 9
+Dreamy Carriages: 3
+Whimsical Music Box: 1
+Rainbow Paint (gallons): 20
+Stardust Glitter (pounds): 50
+Total Cost (with tax): $3195.00
+
