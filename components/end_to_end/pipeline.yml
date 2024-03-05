@@ -1,0 +1,183 @@
+# PIPELINE DEFINITION
+# Name: unicorn-carousel-construction-quote
+# Inputs:
+#    carou_radius: float
+#    mat_costs: float
+#    st: str
+# Outputs:
+#    Output: str
+components:
+  comp-calculate-material-cost:
+    executorLabel: exec-calculate-material-cost
+    inputDefinitions:
+      parameters:
+        cost_per_square_unit:
+          parameterType: NUMBER_DOUBLE
+        radius:
+          parameterType: NUMBER_DOUBLE
+    outputDefinitions:
+      parameters:
+        Output:
+          parameterType: NUMBER_DOUBLE
+  comp-generate-quote:
+    executorLabel: exec-generate-quote
+    inputDefinitions:
+      parameters:
+        state_tax:
+          parameterType: NUMBER_DOUBLE
+        total_cost:
+          parameterType: NUMBER_DOUBLE
+    outputDefinitions:
+      parameters:
+        quote:
+          parameterType: STRING
+  comp-get-state-tax-rate:
+    executorLabel: exec-get-state-tax-rate
+    inputDefinitions:
+      parameters:
+        state:
+          parameterType: STRING
+    outputDefinitions:
+      parameters:
+        Output:
+          parameterType: NUMBER_DOUBLE
+deploymentSpec:
+  executors:
+    exec-calculate-material-cost:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - calculate_material_cost
+        command:
+        - python3
+        - -m
+        - kfp.dsl.executor_main
+        image: chasechristensen/material_cost_component:v1
+    exec-generate-quote:
+      container:
+        args:
+        - '{{$.inputs.parameters[''total_cost'']}}'
+        - '{{$.inputs.parameters[''state_tax'']}}'
+        - '{{$.outputs.parameters[''quote''].output_file}}'
+        command:
+        - Rscript
+        - /usr/local/bin/generate_quote.r
+        image: chasechristensen/generate_quote:v1
+    exec-get-state-tax-rate:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - get_state_tax_rate
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet --no-warn-script-location 'kfp==2.4.0'\
+          \ '--no-deps' 'typing-extensions>=3.7.4,<5; python_version<\"3.9\"' && \"\
+          $0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          _KFP_RUNTIME=true python3 -m kfp.dsl.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef get_state_tax_rate(state: str) -> float:\n    \"\"\"Returns the\
+          \ tax rate for a given state or raises an error if the state is invalid.\"\
+          \"\"\n    # Dictionary of state tax rates (simplified and fictional rates\
+          \ for illustration)\n    state_tax_rates = {\n        \"AL\": 0.04, \"AK\"\
+          : 0.0, \"AZ\": 0.056, \"AR\": 0.065, \"CA\": 0.075,\n        \"CO\": 0.029,\
+          \ \"CT\": 0.0635, \"DE\": 0.0, \"FL\": 0.06, \"GA\": 0.04,\n        \"HI\"\
+          : 0.04, \"ID\": 0.06, \"IL\": 0.0625, \"IN\": 0.07, \"IA\": 0.06,\n    \
+          \    \"KS\": 0.065, \"KY\": 0.06, \"LA\": 0.0445, \"ME\": 0.055, \"MD\"\
+          : 0.06,\n        \"MA\": 0.0625, \"MI\": 0.06, \"MN\": 0.06875, \"MS\":\
+          \ 0.07, \"MO\": 0.04225,\n        \"MT\": 0.0, \"NE\": 0.055, \"NV\": 0.0685,\
+          \ \"NH\": 0.0, \"NJ\": 0.06625,\n        \"NM\": 0.05125, \"NY\": 0.04,\
+          \ \"NC\": 0.0475, \"ND\": 0.05, \"OH\": 0.0575,\n        \"OK\": 0.045,\
+          \ \"OR\": 0.0, \"PA\": 0.06, \"RI\": 0.07, \"SC\": 0.06,\n        \"SD\"\
+          : 0.045, \"TN\": 0.07, \"TX\": 0.0625, \"UT\": 0.0485, \"VT\": 0.06,\n \
+          \       \"VA\": 0.053, \"WA\": 0.065, \"WV\": 0.06, \"WI\": 0.05, \"WY\"\
+          : 0.04\n    }\n\n    # Check if the state is valid and return the tax rate\n\
+          \    if state.upper() in state_tax_rates:\n        return state_tax_rates[state.upper()]\n\
+          \    else:\n        # If the state is not valid, raise an error and exit\n\
+          \        raise ValueError(f\"Invalid state: {state}. Please provide a valid\
+          \ US state abbreviation.\")\n\n"
+        image: python:3.7
+pipelineInfo:
+  name: unicorn-carousel-construction-quote
+root:
+  dag:
+    outputs:
+      parameters:
+        Output:
+          valueFromParameter:
+            outputParameterKey: quote
+            producerSubtask: generate-quote
+    tasks:
+      calculate-material-cost:
+        cachingOptions:
+          enableCache: true
+        componentRef:
+          name: comp-calculate-material-cost
+        inputs:
+          parameters:
+            cost_per_square_unit:
+              componentInputParameter: mat_costs
+            radius:
+              componentInputParameter: carou_radius
+        taskInfo:
+          name: calculate-material-cost
+      generate-quote:
+        cachingOptions:
+          enableCache: true
+        componentRef:
+          name: comp-generate-quote
+        dependentTasks:
+        - calculate-material-cost
+        - get-state-tax-rate
+        inputs:
+          parameters:
+            state_tax:
+              taskOutputParameter:
+                outputParameterKey: Output
+                producerTask: get-state-tax-rate
+            total_cost:
+              taskOutputParameter:
+                outputParameterKey: Output
+                producerTask: calculate-material-cost
+        taskInfo:
+          name: generate-quote
+      get-state-tax-rate:
+        cachingOptions:
+          enableCache: true
+        componentRef:
+          name: comp-get-state-tax-rate
+        inputs:
+          parameters:
+            state:
+              componentInputParameter: st
+        taskInfo:
+          name: get-state-tax-rate
+  inputDefinitions:
+    parameters:
+      carou_radius:
+        parameterType: NUMBER_DOUBLE
+      mat_costs:
+        parameterType: NUMBER_DOUBLE
+      st:
+        parameterType: STRING
+  outputDefinitions:
+    parameters:
+      Output:
+        parameterType: STRING
+schemaVersion: 2.1.0
+sdkVersion: kfp-2.4.0
