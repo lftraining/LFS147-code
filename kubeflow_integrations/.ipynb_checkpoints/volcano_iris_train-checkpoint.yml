@@ -31,7 +31,7 @@ spec:
               - --model_path=/tmp/xgboost_model/iris_model
               - --model_storage_type=local
     Worker:
-      replicas: 2
+      replicas: 1
       restartPolicy: ExitCode
       template:
         spec:
