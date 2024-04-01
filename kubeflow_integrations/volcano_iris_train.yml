@@ -28,7 +28,7 @@ spec:
               - --xgboost_parameter=objective:multi:softprob,num_class:3
               - --n_estimators=10
               - --learning_rate=0.1
-              - --model_path=/tmp/xgboost_model/
+              - --model_path=/tmp/xgboost_model/iris_model
               - --model_storage_type=local
     Worker:
       replicas: 3
