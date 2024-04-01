@@ -12,13 +12,13 @@ spec:
           volumes:
           - name: task-pv-storage
             persistentVolumeClaim:
-              claimName: xgboostlocal #we expect XGBOOST local to be created.
+              claimName: xgboostlocal 
           containers:
           - name: xgboost
             image: docker.io/kubeflow/xgboost-dist-iris:latest
             volumeMounts:
               - name: task-pv-storage
-                mountPath: /tmp/xgboost_model/
+                mountPath: <PVC_NAME>
             ports:
             - containerPort: 9991
               name: xgboostjob-port
@@ -44,7 +44,7 @@ spec:
             image: docker.io/kubeflow/xgboost-dist-iris:latest
             volumeMounts:
               - name: task-pv-storage
-                mountPath: /tmp/xgboost_model
+                mountPath: <PVC_NAME>
             ports:
             - containerPort: 9991
               name: xgboostjob-port

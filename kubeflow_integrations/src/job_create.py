@@ -9,14 +9,23 @@ def get_namespace():
     with open(namespace_path, 'r') as file:
         return file.read().strip()
 
-def get_yaml_from_git(repo_url):
-    # Make an HTTP GET request to the raw content URL of the YAML file in the Git repository
+def get_yaml_from_git(repo_url,pvc_name):
     response = requests.get(repo_url)
-    print(response.text[:100])
     if response.status_code == 200:
-        return yaml.safe_load(response.text)
+        yaml_content = yaml.safe_load(response.text)
+        
+        # Assuming the structure of the YAML is consistent with your example,
+        # update PVC names for both Master and Worker
+        for role in ['Master', 'Worker']:
+            if role in yaml_content['spec']['xgbReplicaSpecs']:
+                for volume in yaml_content['spec']['xgbReplicaSpecs'][role]['template']['spec']['volumes']:
+                    if volume['name'] == 'task-pv-storage':
+                        volume['persistentVolumeClaim']['claimName'] = pvc_name
+        
+        return yaml_content
     else:
         raise Exception(f"Failed to get YAML file from {repo_url}. Status code: {response.status_code}")
+        sys.exit(1)
 
 # Load in-cluster Kubernetes configuration
 config.load_incluster_config()
