@@ -1,0 +1,82 @@
+# PIPELINE DEFINITION
+# Name: xgboost-train-pipeline
+# Inputs:
+#    claim: str
+#    manifest_url: str
+#    masters: float
+#    max_time: float
+#    timeout: float
+#    workers: float
+components:
+  comp-xgboost-train:
+    executorLabel: exec-xgboost-train
+    inputDefinitions:
+      parameters:
+        claim_name:
+          parameterType: STRING
+        master_replicas:
+          parameterType: NUMBER_DOUBLE
+        max_timeout:
+          parameterType: NUMBER_DOUBLE
+        raw_manifest_url:
+          parameterType: STRING
+        timeout_period:
+          parameterType: NUMBER_DOUBLE
+        worker_replicas:
+          parameterType: NUMBER_DOUBLE
+deploymentSpec:
+  executors:
+    exec-xgboost-train:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - xgboost_train
+        command:
+        - python3
+        - -m
+        - kfp.dsl.executor_main
+        image: chasechristensen/xgboost_train_component:v2
+pipelineInfo:
+  name: xgboost-train-pipeline
+root:
+  dag:
+    tasks:
+      xgboost-train:
+        cachingOptions:
+          enableCache: true
+        componentRef:
+          name: comp-xgboost-train
+        inputs:
+          parameters:
+            claim_name:
+              componentInputParameter: claim
+            master_replicas:
+              componentInputParameter: masters
+            max_timeout:
+              componentInputParameter: max_time
+            raw_manifest_url:
+              componentInputParameter: manifest_url
+            timeout_period:
+              componentInputParameter: timeout
+            worker_replicas:
+              componentInputParameter: workers
+        taskInfo:
+          name: xgboost-train
+  inputDefinitions:
+    parameters:
+      claim:
+        parameterType: STRING
+      manifest_url:
+        parameterType: STRING
+      masters:
+        parameterType: NUMBER_DOUBLE
+      max_time:
+        parameterType: NUMBER_DOUBLE
+      timeout:
+        parameterType: NUMBER_DOUBLE
+      workers:
+        parameterType: NUMBER_DOUBLE
+schemaVersion: 2.1.0
+sdkVersion: kfp-2.4.0

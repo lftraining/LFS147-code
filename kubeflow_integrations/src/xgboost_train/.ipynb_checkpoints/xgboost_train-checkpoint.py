@@ -84,10 +84,10 @@ def monitor_job_status(api_instance, group, version, namespace, plural, job_name
             
             # Check flags to determine next steps
             if succeeded:
-                print("Job succeeded!")
+                print("XGBOOST TRAIN Job succeeded!!")
                 break  # Exit the while loop
             elif failed:
-                print("Job failed.")
+                print("XGBOOST TRAIN Job failed. Check")
                 sys.exit(1)  # Exit script with an error
             
             # For debugging or monitoring, you might want to print the current condition type being checked
