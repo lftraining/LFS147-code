@@ -12,13 +12,13 @@ spec:
           volumes:
           - name: task-pv-storage
             persistentVolumeClaim:
-              claimName: xgboostlocal 
+              claimName: <PVC NAME>
           containers:
           - name: xgboost
             image: docker.io/kubeflow/xgboost-dist-iris:latest
             volumeMounts:
               - name: task-pv-storage
-                mountPath: <PVC_NAME>
+                mountPath: /tmp/xgboost/model/
             ports:
             - containerPort: 9991
               name: xgboostjob-port
@@ -38,13 +38,13 @@ spec:
           volumes:
           - name: task-pv-storage
             persistentVolumeClaim:
-              claimName: xgboostlocal
+              claimName: <PVC NAME>
           containers:
           - name: xgboost
             image: docker.io/kubeflow/xgboost-dist-iris:latest
             volumeMounts:
               - name: task-pv-storage
-                mountPath: <PVC_NAME>
+                mountPath: /tmp/xgboost_model/
             ports:
             - containerPort: 9991
               name: xgboostjob-port

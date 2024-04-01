@@ -37,7 +37,7 @@ namespace = get_namespace()
 yaml_file_url = 'https://raw.githubusercontent.com/chasecadet/kubeflow_course/main/kubeflow_integrations/volcano_iris_train.yml'
 
 # Get the XGBoostJob definition from the YAML file in the Git repository
-crd_manifest = get_yaml_from_git(yaml_file_url)
+crd_manifest = get_yaml_from_git(yaml_file_url,)
 
 # Define the details of the custom resource
 group = 'kubeflow.org'  # API group of the XGBoostJob
