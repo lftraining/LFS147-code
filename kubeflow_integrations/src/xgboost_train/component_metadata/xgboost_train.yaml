@@ -1,0 +1,82 @@
+# PIPELINE DEFINITION
+# Name: xgboost-train
+# Inputs:
+#    claim_name: str
+#    master_replicas: float
+#    max_timeout: float
+#    raw_manifest_url: str
+#    timeout_period: float
+#    worker_replicas: float
+components:
+  comp-xgboost-train:
+    executorLabel: exec-xgboost-train
+    inputDefinitions:
+      parameters:
+        claim_name:
+          parameterType: STRING
+        master_replicas:
+          parameterType: NUMBER_DOUBLE
+        max_timeout:
+          parameterType: NUMBER_DOUBLE
+        raw_manifest_url:
+          parameterType: STRING
+        timeout_period:
+          parameterType: NUMBER_DOUBLE
+        worker_replicas:
+          parameterType: NUMBER_DOUBLE
+deploymentSpec:
+  executors:
+    exec-xgboost-train:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - xgboost_train
+        command:
+        - python3
+        - -m
+        - kfp.dsl.executor_main
+        image: chasechristensen/xgboost_train_component:v2
+pipelineInfo:
+  name: xgboost-train
+root:
+  dag:
+    tasks:
+      xgboost-train:
+        cachingOptions:
+          enableCache: true
+        componentRef:
+          name: comp-xgboost-train
+        inputs:
+          parameters:
+            claim_name:
+              componentInputParameter: claim_name
+            master_replicas:
+              componentInputParameter: master_replicas
+            max_timeout:
+              componentInputParameter: max_timeout
+            raw_manifest_url:
+              componentInputParameter: raw_manifest_url
+            timeout_period:
+              componentInputParameter: timeout_period
+            worker_replicas:
+              componentInputParameter: worker_replicas
+        taskInfo:
+          name: xgboost-train
+  inputDefinitions:
+    parameters:
+      claim_name:
+        parameterType: STRING
+      master_replicas:
+        parameterType: NUMBER_DOUBLE
+      max_timeout:
+        parameterType: NUMBER_DOUBLE
+      raw_manifest_url:
+        parameterType: STRING
+      timeout_period:
+        parameterType: NUMBER_DOUBLE
+      worker_replicas:
+        parameterType: NUMBER_DOUBLE
+schemaVersion: 2.1.0
+sdkVersion: kfp-2.7.0

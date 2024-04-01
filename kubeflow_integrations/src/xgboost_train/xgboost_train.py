@@ -102,11 +102,11 @@ def monitor_job_status(api_instance, group, version, namespace, plural, job_name
         time.sleep(timeout_period)
 
 
-@dsl.component(target_image='chasechristensen/xgboost_train_component:v1')
-def xgboost_train(yaml_file_url,claim_name,master_replica,worker_replica,pvc_name,raw_manifest_url,check_period,max_timeout,worker_replicas,master_replicas):
+@dsl.component(target_image='chasechristensen/xgboost_train_component:v2')
+def xgboost_train(claim_name: str, raw_manifest_url:str, timeout_period: float,max_timeout: float, worker_replicas: float,master_replicas: float) -> None:
     config.load_incluster_config()
     api_instance = client.CustomObjectsApi()
-    crd_manifest = get_yaml_from_git(yaml_file_url,claim_name)
+    crd_manifest = get_yaml_from_git(raw_manifest_url,claim_name)
     group = 'kubeflow.org'
     version = 'v1'
     plural = 'xgboostjobs'
