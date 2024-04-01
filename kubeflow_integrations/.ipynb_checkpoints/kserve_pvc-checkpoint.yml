@@ -6,4 +6,4 @@ spec:
   predictor:
     xgboost:
       protocolVersion: "v2"
-      storageUri: "pvc://xgboostlocal/iris_model"
+      storageUri: "pvc://pvc-name/iris_model"
