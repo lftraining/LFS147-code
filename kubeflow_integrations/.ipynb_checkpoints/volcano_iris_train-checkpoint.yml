@@ -18,7 +18,7 @@ spec:
             image: docker.io/kubeflow/xgboost-dist-iris:latest
             volumeMounts:
               - name: task-pv-storage
-                mountPath: /tmp/xgboost/model/
+                mountPath: /tmp/xgboost/model
             ports:
             - containerPort: 9991
               name: xgboostjob-port
@@ -44,7 +44,7 @@ spec:
             image: docker.io/kubeflow/xgboost-dist-iris:latest
             volumeMounts:
               - name: task-pv-storage
-                mountPath: /tmp/xgboost_model/
+                mountPath: /tmp/xgboost_model
             ports:
             - containerPort: 9991
               name: xgboostjob-port
