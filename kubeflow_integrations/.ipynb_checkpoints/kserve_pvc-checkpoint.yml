@@ -4,7 +4,6 @@ metadata:
   name: "xgboost-iris"
 spec:
   predictor:
-    sklearn:
+    xgboost:
       protocolVersion: "v2"
-      storageUri: "pvc://xgboostlocal/iris_model.joblib"
-      
+      storageUri: "pvc://xgboostlocal/iris_model"
