@@ -1,0 +1,84 @@
+# PIPELINE DEFINITION
+# Name: create-volume
+# Inputs:
+#    max_timeout: float
+#    pvc_name: str
+#    storage_size: float
+#    timeout_period: float
+# Outputs:
+#    Output: str
+components:
+  comp-create-volume:
+    executorLabel: exec-create-volume
+    inputDefinitions:
+      parameters:
+        max_timeout:
+          parameterType: NUMBER_DOUBLE
+        pvc_name:
+          parameterType: STRING
+        storage_size:
+          parameterType: NUMBER_DOUBLE
+        timeout_period:
+          parameterType: NUMBER_DOUBLE
+    outputDefinitions:
+      parameters:
+        Output:
+          parameterType: STRING
+deploymentSpec:
+  executors:
+    exec-create-volume:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - create_volume
+        command:
+        - python3
+        - -m
+        - kfp.dsl.executor_main
+        image: chasechristensen/volume_component:v2
+pipelineInfo:
+  name: create-volume
+root:
+  dag:
+    outputs:
+      parameters:
+        Output:
+          valueFromParameter:
+            outputParameterKey: Output
+            producerSubtask: create-volume
+    tasks:
+      create-volume:
+        cachingOptions:
+          enableCache: true
+        componentRef:
+          name: comp-create-volume
+        inputs:
+          parameters:
+            max_timeout:
+              componentInputParameter: max_timeout
+            pvc_name:
+              componentInputParameter: pvc_name
+            storage_size:
+              componentInputParameter: storage_size
+            timeout_period:
+              componentInputParameter: timeout_period
+        taskInfo:
+          name: create-volume
+  inputDefinitions:
+    parameters:
+      max_timeout:
+        parameterType: NUMBER_DOUBLE
+      pvc_name:
+        parameterType: STRING
+      storage_size:
+        parameterType: NUMBER_DOUBLE
+      timeout_period:
+        parameterType: NUMBER_DOUBLE
+  outputDefinitions:
+    parameters:
+      Output:
+        parameterType: STRING
+schemaVersion: 2.1.0
+sdkVersion: kfp-2.7.0

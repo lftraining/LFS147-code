@@ -1,0 +1,75 @@
+# PIPELINE DEFINITION
+# Name: create-inference-service
+# Inputs:
+#    max_timeout: float
+#    name: str
+#    raw_manifest_url: str
+#    storageUri: str
+#    timeout_period: float
+components:
+  comp-create-inference-service:
+    executorLabel: exec-create-inference-service
+    inputDefinitions:
+      parameters:
+        max_timeout:
+          parameterType: NUMBER_DOUBLE
+        name:
+          parameterType: STRING
+        raw_manifest_url:
+          parameterType: STRING
+        storageUri:
+          parameterType: STRING
+        timeout_period:
+          parameterType: NUMBER_DOUBLE
+deploymentSpec:
+  executors:
+    exec-create-inference-service:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - create_inference_service
+        command:
+        - python3
+        - -m
+        - kfp.dsl.executor_main
+        image: chasechristensen/xgboost_serve_component:v3
+pipelineInfo:
+  name: create-inference-service
+root:
+  dag:
+    tasks:
+      create-inference-service:
+        cachingOptions:
+          enableCache: true
+        componentRef:
+          name: comp-create-inference-service
+        inputs:
+          parameters:
+            max_timeout:
+              componentInputParameter: max_timeout
+            name:
+              componentInputParameter: name
+            raw_manifest_url:
+              componentInputParameter: raw_manifest_url
+            storageUri:
+              componentInputParameter: storageUri
+            timeout_period:
+              componentInputParameter: timeout_period
+        taskInfo:
+          name: create-inference-service
+  inputDefinitions:
+    parameters:
+      max_timeout:
+        parameterType: NUMBER_DOUBLE
+      name:
+        parameterType: STRING
+      raw_manifest_url:
+        parameterType: STRING
+      storageUri:
+        parameterType: STRING
+      timeout_period:
+        parameterType: NUMBER_DOUBLE
+schemaVersion: 2.1.0
+sdkVersion: kfp-2.7.0
